@@ -272,9 +272,11 @@ class DefaultTrainer(SimpleTrainer):
             setup_logger()
         # Assume these objects must be constructed in this order.
         model = self.build_model(cfg)
+        logger.info('Created The model')
         optimizer = self.build_optimizer(cfg, model)
+        logger.info('Created The optimizer')
         data_loader = self.build_train_loader(cfg)
-
+        logger.info('Created The data loader')
         # For training, wrap with DDP. But don't need this for inference.
         if comm.get_world_size() > 1:
             model = DistributedDataParallel(
@@ -283,6 +285,7 @@ class DefaultTrainer(SimpleTrainer):
         super().__init__(model, data_loader, optimizer)
 
         self.scheduler = self.build_lr_scheduler(cfg, optimizer)
+        logger.info('Created The scheduler')
         # Assume no other objects need to be checkpointed.
         # We can later make it checkpoint the stateful hooks
         self.checkpointer = DetectionCheckpointer(
@@ -292,11 +295,14 @@ class DefaultTrainer(SimpleTrainer):
             optimizer=optimizer,
             scheduler=self.scheduler,
         )
+        logger.info('Created The checkpointer')
         self.start_iter = 0
         self.max_iter = cfg.SOLVER.MAX_ITER
         self.cfg = cfg
 
         self.register_hooks(self.build_hooks())
+
+        logger.info('Registered the hooks')
 
     def resume_or_load(self, resume=True):
         """

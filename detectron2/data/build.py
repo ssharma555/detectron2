@@ -274,8 +274,10 @@ def build_detection_train_loader(cfg, mapper=None):
     Returns:
         an infinite iterator of training data
     """
+    logger = logging.getLogger(__name__)
     num_workers = get_world_size()
     images_per_batch = cfg.SOLVER.IMS_PER_BATCH
+    logger.info(f"num_workers = {num_workers} , images_per_batch={images_per_batch}")
     assert (
         images_per_batch % num_workers == 0
     ), "SOLVER.IMS_PER_BATCH ({}) must be divisible by the number of workers ({}).".format(
@@ -303,7 +305,7 @@ def build_detection_train_loader(cfg, mapper=None):
     dataset = MapDataset(dataset, mapper)
 
     sampler_name = cfg.DATALOADER.SAMPLER_TRAIN
-    logger = logging.getLogger(__name__)
+
     logger.info("Using training sampler {}".format(sampler_name))
     if sampler_name == "TrainingSampler":
         sampler = samplers.TrainingSampler(len(dataset))
